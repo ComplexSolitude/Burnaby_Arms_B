@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!--suppress ALL -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,6 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FIX: Added Tailwind config to enable class-based dark mode -->
     <script>
+        // noinspection JSUnresolvedReference
         tailwind.config = {
             darkMode: 'class',
         }
@@ -410,7 +412,7 @@
     <div id="login-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center z-50 modal-overlay p-4">
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 w-full max-w-sm">
             <h3 id="login-modal-title" class="text-xl font-semibold mb-4 dark:text-white">Login</h3>
-            <input type="password" id="password-input" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-center text-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="Password">
+            <input type="password" id="password-input" aria-label="Password" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-center text-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="Password">
             <div class="flex justify-end space-x-3 mt-4">
                 <button id="login-cancel-btn" class="bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 py-2 px-4 rounded-xl">Cancel</button>
                 <button id="login-submit-btn" class="bg-emerald-600 text-white py-2 px-4 rounded-xl">Login</button>
@@ -428,7 +430,7 @@
     <div id="low-score-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center z-50 modal-overlay p-4">
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 w-full max-w-sm">
             <h3 class="text-xl font-semibold mb-4 dark:text-white">Enter Score (&lt;10)</h3>
-            <input type="number" id="low-score-input" min="1" max="9" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-center text-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="1-9">
+            <input type="number" id="low-score-input" aria-label="Low Score Input" min="1" max="9" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-center text-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="1-9">
             <div class="flex justify-end space-x-3 mt-4">
                 <button id="low-score-cancel" class="bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 py-2 px-4 rounded-xl">Cancel</button>
                 <button id="low-score-submit" class="bg-emerald-600 text-white py-2 px-4 rounded-xl">Add Fine</button>
@@ -463,9 +465,12 @@
 
     <script type="module">
         // --- Firebase SDK Imports ---
+        // noinspection JSFileReferences
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        // noinspection JSFileReferences
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, addDoc, doc, deleteDoc, runTransaction, query, updateDoc, serverTimestamp, increment, setLogLevel, writeBatch, Timestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // noinspection JSFileReferences
+        import { getFirestore, collection, onSnapshot, addDoc, doc, deleteDoc, runTransaction, query, updateDoc, serverTimestamp, increment, writeBatch, Timestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- APPLICATION STATE ---
         const state = {
@@ -1598,7 +1603,6 @@
             const app = initializeApp(firebaseConfig);
             state.db = getFirestore(app);
             state.auth = getAuth(app);
-            // setLogLevel('debug');
 
             ui.connectionStatus.classList.remove('hidden');
 
