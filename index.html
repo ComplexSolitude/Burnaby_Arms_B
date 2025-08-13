@@ -482,11 +482,13 @@
             currentGameIndex: 0,
             confirmation: { action: null, data: null },
             loginAttemptRole: null,
+            logoutTimer: null,
         };
 
         // --- CONSTANTS ---
         const ADMIN_PASSWORD = 'burnaby';
         const MEMBER_PASSWORD = 'darts';
+        const SESSION_DURATION_MS = 12 * 60 * 60 * 1000; // 12 hours
         const GAME_TITLES = ["Singles 1", "Singles 2", "Singles 3", "Singles 4", "Singles 5", "Doubles 1", "Doubles 2"];
         const PLAYERS_COLLECTION = 'players';
         const FIXTURES_COLLECTION = 'fixtures';
@@ -1099,6 +1101,10 @@
             }
 
             if (success) {
+                localStorage.setItem('userRole', state.userRole);
+                localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('loginTimestamp', Date.now().toString());
+                startLogoutTimer();
                 showToast('Login successful!');
                 closeLoginModal();
                 ui.roleSelectionOverlay.classList.add('hidden');
@@ -1110,11 +1116,25 @@
         }
 
         function handleLogout() {
+            if (state.logoutTimer) {
+                clearTimeout(state.logoutTimer);
+                state.logoutTimer = null;
+            }
             state.isLoggedIn = false;
             state.userRole = null;
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('loginTimestamp');
             showToast('You have been logged out.');
             ui.mainApp.classList.add('hidden');
             ui.roleSelectionOverlay.classList.remove('hidden');
+        }
+
+        function startLogoutTimer(duration = SESSION_DURATION_MS) {
+            if (state.logoutTimer) {
+                clearTimeout(state.logoutTimer);
+            }
+            state.logoutTimer = setTimeout(handleLogout, duration);
         }
 
         function openConfirmModal(title, text, action, data) {
@@ -1535,6 +1555,31 @@
                 ui.themeIconsMobile.moon.classList.add('hidden');
             }
 
+            // --- Persistent Login ---
+            const savedRole = localStorage.getItem('userRole');
+            const savedLogin = localStorage.getItem('isLoggedIn') === 'true';
+            const loginTimestamp = Number(localStorage.getItem('loginTimestamp'));
+            if (savedRole) {
+                if (savedLogin && savedRole !== 'viewer' && loginTimestamp) {
+                    const elapsed = Date.now() - loginTimestamp;
+                    if (elapsed < SESSION_DURATION_MS) {
+                        state.userRole = savedRole;
+                        state.isLoggedIn = true;
+                        ui.roleSelectionOverlay.classList.add('hidden');
+                        ui.mainApp.classList.remove('hidden');
+                        startLogoutTimer(SESSION_DURATION_MS - elapsed);
+                        render();
+                    } else {
+                        handleLogout();
+                    }
+                } else if (savedRole === 'viewer') {
+                    state.userRole = 'viewer';
+                    ui.roleSelectionOverlay.classList.add('hidden');
+                    ui.mainApp.classList.remove('hidden');
+                    render();
+                }
+            }
+
             // --- Firebase Setup ---
             const firebaseConfig = {
                 apiKey: process.env.FIREBASE_API_KEY,
@@ -1620,6 +1665,9 @@
                     if (role === 'viewer') {
                         state.userRole = 'viewer';
                         state.isLoggedIn = false;
+                        localStorage.setItem('userRole', 'viewer');
+                        localStorage.removeItem('isLoggedIn');
+                        localStorage.removeItem('loginTimestamp');
                         ui.roleSelectionOverlay.classList.add('hidden');
                         ui.mainApp.classList.remove('hidden');
                         render();
